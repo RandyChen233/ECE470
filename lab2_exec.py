@@ -58,9 +58,12 @@ Q = [ [Q11, Q12, Q13], \
 TODO: define a ROS topic callback funtion for getting the state of suction cup
 Whenever ur3/gripper_input publishes info this callback function is called.
 """
+def gripper_callback(msg)
+    global digital_in_0
+    global analog_in_0
 
-
-
+    digital_in_0 = msg.DIGIN
+    analog_in_0 = msg.AIN0
 
 ############### Your Code End Here ###############
 
@@ -226,10 +229,7 @@ def main():
 
     ############## Your Code Start Here ##############
     # TODO: define a ROS subscriber for ur3/gripper_input message and corresponding callback function
-    def gripper_inf(msg):
-        global digital_in_0
-
-        digital_in_0 = msg.D
+    gripper_in = rospy.Subscriber('ur3/gripper_input',gripper_input,gripper_callback)
 
     ############### Your Code End Here ###############
 

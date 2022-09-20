@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 We get inspirations of Tower of Hanoi algorithm from the website below.
@@ -23,6 +23,7 @@ SPIN_RATE = 20
 
 # UR3 home location
 home = np.radians([120, -90, 90, -90, -90, 0])
+midposition = [164.83*pi/180.0, -91.27*pi/180.0, 116.03*pi/180.0, -115.42*pi/180.0, -93.42*pi/180.0, -14.32*pi/180.0]
 
 # Hanoi tower location 1
 Q11 = [120*pi/180.0, -56*pi/180.0, 124*pi/180.0, -158*pi/180.0, -90*pi/180.0, 0*pi/180.0]
@@ -46,10 +47,19 @@ current_position = copy.deepcopy(home)
 """
 TODO: Initialize Q matrix
 """
+Q11 = [142.07*pi/180.0, -56.26*pi/180.0, 123.53*pi/180.0, -160.96*pi/180.0, -94.23*pi/180.0, -39.08*pi/180.0]
+Q12 = [142.09*pi/180.0, -64.36*pi/180.0, 122.62*pi/180.0, -151.95*pi/180.0, -94.16*pi/180.0, -39.15*pi/180.0]
+Q13 = [142.12*pi/180.0, -71.73*pi/180.0, 120.29*pi/180.0, -142.27*pi/180.0, -94.10*pi/180.0, -39.23*pi/180.0]
+Q21 = [162.99*pi/180.0, -58.30*pi/180.0, 126.71*pi/180.0, -159.12*pi/180.0, -93.59*pi/180.0, -15.65*pi/180.0]
+Q22 = [163.02*pi/180.0, -66.75*pi/180.0, 125.62*pi/180.0, -149.58*pi/180.0, -93.52*pi/180.0, -15.71*pi/180.0]
+Q23 = [163.02*pi/180.0, -74.31*pi/180.0, 123.13*pi/180.0, -139.55*pi/180.0, -93.47*pi/180.0, -15.79*pi/180.0]
+Q31 = [188.25*pi/180.0, -53.55*pi/180.0, 112.99*pi/180.0, -148.61*pi/180.0, -95.36*pi/180.0, 7.17*pi/180.0]
+Q32 = [188.25*pi/180.0, -60.48*pi/180.0, 111.89*pi/180.0, -140.49*pi/180.0, -95.30*pi/180.0, 7.11*pi/180.0]
+Q33 = [188.29*pi/180.0, -66.40*pi/180.0, 109.60*pi/180.0, -132.31*pi/180.0, -95.27*pi/180.0, 7.03*pi/180.0]
 
 Q = [ [Q11, Q12, Q13], \
-      [Q11, Q12, Q13], \
-      [Q11, Q12, Q13] ]
+      [Q21, Q22, Q23], \
+      [Q31, Q32, Q33] ]
 ############### Your Code End Here ###############
 
 ############## Your Code Start Here ##############
@@ -58,7 +68,7 @@ Q = [ [Q11, Q12, Q13], \
 TODO: define a ROS topic callback funtion for getting the state of suction cup
 Whenever ur3/gripper_input publishes info this callback function is called.
 """
-def gripper_callback(msg)
+def gripper_callback(msg):
     global digital_in_0
     global analog_in_0
 
@@ -195,10 +205,16 @@ def move_block(pub_cmd, loop_rate, start_loc, start_height, \
     time.sleep(0.5)
     gripper(pub_cmd,loop_rate,suction_on)
     time.sleep(1.0)
-
+    if not digital_in_0:
+        error = 1
+        gripper(pub_cmd,loop_rate,suction_off)
+        rospy.loginfo("Fail to grip the block")
+        return error
+    
     #################################need an intermediate position###########################
 
     rospy.loginfo("Moving to the current destination...")
+    move_arm(pub_cmd,loop_rate,midposition,4.0,4.0)
     # move the are to the destination
     move_arm(pub_cmd,loop_rate,Q[end_loc-1][end_height-1],4.0,4.0)
     time.sleep(0.5)
@@ -243,10 +259,10 @@ def main():
     des_point = 0
 
     while not input_done:
-        input_start = raw_input("Enter the start point of the tower <Either 1 2 3 > ")
+        input_start = input("Enter the start point of the tower <Either 1 2 3 > ")
         print("You entered " + input_start + "\n")
 
-        input_des = raw_input(" Entering the destination of the tower <Either 1 2 3>")
+        input_des = input(" Entering the destination of the tower <Either 1 2 3>")
         print("Your entered" + input_des + "\n")
 
         if int(input_start) < 1:
@@ -275,34 +291,42 @@ def main():
 
     ############## Your Code Start Here ##############
     # TODO: modify the code so that UR3 can move tower accordingly from user input
+    move_arm(pub_command,loop_rate,home,4.0,4.0)
     if move_block(pub_command,loop_rate,start_point,3,des_point,1):
         gripper(pub_command,loop_rate,suction_off)
         rospy.loginfo("error, arm is halt")
         return 1
+    move_arm(pub_command,loop_rate,midposition,4.0,4.0)
     if move_block(pub_command,loop_rate,start_point,2,mid_point,1):
         gripper(pub_command, loop_rate, suction_off)
         rospy.loginfo("error, arm is halt")
         return 1
+    move_arm(pub_command,loop_rate,midposition,4.0,4.0)
     if move_block(pub_command,loop_rate,des_point,1,mid_point,2):
         gripper(pub_command, loop_rate, suction_off)
         rospy.loginfo("error, arm is halt")
         return 1
+    move_arm(pub_command,loop_rate,midposition,4.0,4.0)
     if move_block(pub_command, loop_rate, start_point,1,des_point,1):
         gripper(pub_command, loop_rate, suction_off)
         rospy.loginfo("error, arm is halt")
         return 1
+    move_arm(pub_command,loop_rate,midposition,4.0,4.0)
     if move_block(pub_command,loop_rate,mid_point,2,start_point,1):
         gripper(pub_command, loop_rate, suction_off)
         rospy.loginfo("error, arm is halt")
         return 1
+    move_arm(pub_command,loop_rate,midposition,4.0,4.0)
     if move_block(pub_command, loop_rate,mid_point,1,des_point,2):
         gripper(pub_command, loop_rate, suction_off)
         rospy.loginfo("error, arm is halt")
         return 1
+    move_arm(pub_command,loop_rate,midposition,4.0,4.0)
     if move_block(pub_command,loop_rate,start_point,1,des_point,3):
         gripper(pub_command, loop_rate, suction_off)
         rospy.loginfo("error, arm is halt")
         return 1
+    move_arm(pub_command,loop_rate,midposition,4.0,4.0)
 
     ############### Your Code End Here ###############
 

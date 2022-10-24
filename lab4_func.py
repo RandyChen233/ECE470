@@ -103,6 +103,10 @@ Function that calculates an elbow up Inverse Kinematic solution for the UR3
 
 def lab_invk(xWgrip, yWgrip, zWgrip, yaw_WgripDegree):
 	# =================== Your code starts here ====================#
+	xWgrip = xWgrip *1000
+	yWgrip = yWgrip *1000
+	zWgrip = zWgrip *1000
+	
 	xWgrip = xWgrip +150
 	yWgrip = yWgrip -150
 	zWgrip = zWgrip -10

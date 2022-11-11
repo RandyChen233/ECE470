@@ -20,6 +20,8 @@ go_away = [270*PI/180.0, -90*PI/180.0, 90*PI/180.0, -90*PI/180.0, -90*PI/180.0, 
 xw_yw_G = []
 xw_yw_Y = []
 
+destination_G = [(0.2,0.2,0.2)] 
+
 # Any other global variable you want to define
 # Hints: where to put the blocks?
 
@@ -197,8 +199,28 @@ def move_block(pub_cmd, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel):
 
     # global variable1
     # global variable2
-
     error = 0
+
+    rospy.loginfo("Finding the block...")
+    # move the arm to grip the block
+    move_arm(pub_cmd, loop_rate, start_xw_yw_zw, 4.0, 4.0)
+    time.sleep(0.5)
+    gripper(pub_cmd,loop_rate,suction_on)
+    time.sleep(1.0)
+    if not digital_in_0:
+        error = 1
+        gripper(pub_cmd,loop_rate,suction_off)
+        rospy.loginfo("Fail to grip the block")
+        return error
+    
+    
+    rospy.loginfo("Moving to the current destination...")
+    #move_arm(pub_cmd,loop_rate,midposition,4.0,4.0)
+    # move the are to the destination
+    move_arm(pub_cmd,loop_rate,target_xw_yw_zw,4.0,4.0)
+    time.sleep(0.5)
+    gripper(pub_cmd,loop_rate,suction_off)
+    time.sleep(1.0)
 
     # ========================= Student's code ends here ===========================
 
@@ -255,7 +277,7 @@ def main():
     global go_away
     global xw_yw_R
     global xw_yw_G
-
+    global destination_G
     # global variable1
     # global variable2
 
@@ -290,7 +312,20 @@ def main():
     Hints: use the found xw_yw_G, xw_yw_Y to move the blocks correspondingly. You will
     need to call move_block(pub_command, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel)
     """
-
+    print(xw_yw_G)
+    print(destination_G)
+    #move_arm(pub_command,loop_rate,go_away,4.0,4.0)
+    start_angle = [0.0,0.0,0.0,0.0,0.0,0.0]
+    mid_angle = [0.0,0.0,0.0,0.0,0.0,0.0]
+    dest_angle = [0.0,0.0,0.0,0.0,0.0,0.0]
+    start_angle = lab_invk(xw_yw_G[0][0],xw_yw_G[0][1],0.032,0)
+    mid_angle = lab_invk(xw_yw_G[0][0],xw_yw_G[0][1],0.20,0)
+    dest_angle = lab_invk(destination_G[0][0],destination_G[0][1],0.05,0)
+    move_arm(pub_command, loop_rate, mid_angle, vel, accel)
+    if move_block(pub_command,loop_rate,start_angle,dest_angle,3,1):
+        gripper(pub_command,loop_rate,suction_off)
+        rospy.loginfo("error, arm is halt")
+        return 1
 
 
     # ========================= Student's code ends here ===========================

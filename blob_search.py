@@ -67,15 +67,15 @@ def blob_search(image_raw, color):
 
     #lower = (110,50,50)     # blue lower
     #upper = (130,255,255)   # blue upper
+    if(color == "green"):
+        lower = (50,50,20)     # green lower
+        upper = (70,255,255)   # green upper
 
-    #lower = (50,50,20)     # green lower
-    #upper = (70,255,255)   # green upper
-
-    lower = (0,80,80)     # green and orange lower
-    upper = (80,255,255)   # green and orange upper
-
-    # lower = (0,25,25)     # orange lower
-    # upper = (25,255,255)   # orange upper
+    #lower = (0,80,80)     # green and orange lower
+    #upper = (80,255,255)   # green and orange upper
+    if(color == "orange"):
+        lower = (0,80,80)     # orange lower
+        upper = (25,255,255)   # orange upper
 
     # Define a mask using the lower and upper bounds of the target color
     mask_image = cv2.inRange(hsv_image, lower, upper)
